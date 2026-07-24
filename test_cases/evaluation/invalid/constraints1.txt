@@ -1,0 +1,2 @@
+should not be allowed as Bob is not allowed to print (third row) and Alice is not allowed to print at such high resolution (fourth row)
+permission

@@ -1,0 +1,16 @@
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix : <http://example.com/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:policy-001 odrl:permission [
+    odrl:action odrl:read ;
+  ], [
+    odrl:assignee :Alice ;
+    odrl:action odrl:print ;
+    odrl:target :Manual ; 
+    odrl:constraint [
+      odrl:leftOperand :Resolution ;
+      odrl:operator odrl:lteq ;
+      odrl:rightOperand "150"^^xsd:integer ;
+      odrl:unit :dpi ;
+    ] ] .

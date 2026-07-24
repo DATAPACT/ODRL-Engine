@@ -1,0 +1,5 @@
+http://www.w3.org/ns/odrl/2/dateTime,http://www.w3.org/ns/odrl/2/Party,http://www.w3.org/ns/odrl/2/Action,http://www.w3.org/ns/odrl/2/Asset,http://example.com/Resolution,http://example.com/Pages
+2026-10-10T10:12:00,http://example.com/Alice,http://www.w3.org/ns/odrl/2/print,http://example.com/Manual,150,
+2026-10-10T10:11:00,http://example.com/Bob,http://www.w3.org/ns/odrl/2/read,http://example.com/Book,,80
+2026-10-10T10:10:00,http://example.com/Bob,http://www.w3.org/ns/odrl/2/print,http://example.com/Manual,100,300
+2026-10-10T10:09:00,http://example.com/Alice,http://www.w3.org/ns/odrl/2/print,http://example.com/Manual,300,
