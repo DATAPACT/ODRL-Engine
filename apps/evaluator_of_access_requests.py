@@ -1506,12 +1506,6 @@ if st.session_state.test_case_description:
     )
 
 st.markdown(
-    "This app allows you to create an access request from an ODRL policy and evaluate "
-    "whether the request matches the policy's permissions and "
-    "prohibitions."
-)
-
-st.markdown(
     """
     This app allows you to create an access request from an ODRL policy and evaluate 
     whether the request matches the policy's permissions, prohibitions and duties. 
