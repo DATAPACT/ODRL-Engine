@@ -1506,13 +1506,15 @@ if st.session_state.test_case_description:
     )
 
 st.markdown(
-    "This app allwos you to create an access request from an ODRL policy and evaluate "
+    "This app allows you to create an access request from an ODRL policy and evaluate "
     "whether the request matches the policy's permissions and "
     "prohibitions."
 )
 
 st.markdown(
     """
+    This app allows you to create an access request from an ODRL policy and evaluate 
+    whether the request matches the policy's permissions, prohibitions and duties. 
     Either select an example to display with the dropdown above, or follow these instructions:
     1) Upload an ODRL Policy
     2) Optionally, upload a State of the World object if you want to factor in previously executed duties.
@@ -1524,6 +1526,9 @@ st.markdown(
     affect your access request, depending on certain conditions. For example, a prohibition might only apply if the value
     of a feature you left blank has a value sufficiently low, or a permission might apply only if you are going to fulfill
     a certain duty.
+    7) Optionally you can also click on the `Add to State of the World` button to record that the action you are requesting permission
+    for has now been performed. You can do this to record performing a duty action, before checking if this allows you to 
+    exercise a permission with duties. 
     """
 )
 
