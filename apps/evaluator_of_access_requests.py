@@ -171,6 +171,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+def initialise_sotw_raw_editor():
+    """
+    When switching to raw CSV mode, initialise the editor from the
+    canonical State of the World text.
+    """
+    st.session_state.sotw_raw_editor = st.session_state.sotw_text
+
+def update_sotw_from_raw_editor():
+    """
+    Copy edits made in the raw CSV editor back into the canonical
+    State of the World text stored in session state.
+    """
+    st.session_state.sotw_text = st.session_state.sotw_raw_editor
 
 def humanise_iri(iri):
     """
@@ -1135,6 +1148,224 @@ def make_access_request_json(form_values):
         indent=2
     )
 
+# ============================================================
+# BUILT-IN EVALUATION TEST CASES
+# ============================================================
+
+TEST_CASES_DIR = (
+    PROJECT_ROOT
+    / "test_cases"
+    / "evaluation"
+    / "access_control"
+)
+
+
+def load_test_cases():
+    """
+    Discover built-in access-control evaluation test cases.
+
+    A test case X consists of:
+        X.ttl  - ODRL policy
+        X.json - access request
+        X.txt  - expected result / metadata
+        X.csv  - optional State of the World
+
+    Only tests having at least the required .ttl, .json and .txt
+    files are returned.
+    """
+
+    test_cases = {}
+
+    if not TEST_CASES_DIR.exists():
+        return test_cases
+
+    for ttl_path in sorted(TEST_CASES_DIR.glob("*.ttl")):
+        test_name = ttl_path.stem
+
+        json_path = TEST_CASES_DIR / f"{test_name}.json"
+        txt_path = TEST_CASES_DIR / f"{test_name}.txt"
+        csv_path = TEST_CASES_DIR / f"{test_name}.csv"
+
+        # A valid test requires these three files.
+        if not json_path.exists() or not txt_path.exists():
+            continue
+
+        metadata = {}
+
+        try:
+            with txt_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+
+                    if not line or "=" not in line:
+                        continue
+
+                    key, value = line.split("=", 1)
+                    metadata[key.strip()] = value.strip()
+
+        except Exception:
+            # Ignore malformed test metadata rather than breaking
+            # the whole application.
+            continue
+
+        test_cases[test_name] = {
+            "policy_path": ttl_path,
+            "access_request_path": json_path,
+            "sotw_path": csv_path if csv_path.exists() else None,
+            "metadata": metadata,
+        }
+
+    return test_cases
+
+
+def load_test_case(test_name):
+    """
+    Load all files belonging to one built-in test case and return
+    their contents plus metadata.
+    """
+
+    test_cases = load_test_cases()
+
+    if test_name not in test_cases:
+        raise ValueError(
+            f"Test case '{test_name}' could not be found."
+        )
+
+    test_case = test_cases[test_name]
+
+    with test_case["policy_path"].open(
+        "r", encoding="utf-8"
+    ) as f:
+        policy_text = f.read()
+
+    with test_case["access_request_path"].open(
+        "r", encoding="utf-8"
+    ) as f:
+        access_request_text = f.read()
+
+    sotw_text = ""
+
+    if test_case["sotw_path"] is not None:
+        with test_case["sotw_path"].open(
+            "r", encoding="utf-8"
+        ) as f:
+            sotw_text = f.read()
+
+    metadata = test_case["metadata"]
+
+    return {
+        "policy_text": policy_text,
+        "access_request_text": access_request_text,
+        "sotw_text": sotw_text,
+        "expected_accept_decision": metadata.get(
+            "expected_accept_decision"
+        ),
+        "semantics_for_duties": int(
+            metadata.get("semantics_for_duties", -1).rstrip(",")
+        ),
+        "semantics_by_default": int(
+            metadata.get("semantics_by_default", -1).rstrip(",")
+        ),
+        "test_description": metadata.get(
+            "test_description", ""
+        ),
+        "test_tag": metadata.get(
+            "test_tag", ""
+        ),
+    }
+
+
+def select_test_case(test_name):
+    """
+    Streamlit callback used by the test-case dropdown.
+    Loads the selected built-in test case into session state.
+    """
+
+    if not test_name:
+        return
+
+    test_case = load_test_case(test_name)
+
+    st.session_state.policy_text = test_case["policy_text"]
+    st.session_state.access_request_text = (
+        test_case["access_request_text"]
+    )
+    st.session_state.sotw_text = test_case["sotw_text"]
+    st.session_state.sotw_raw_editor = test_case["sotw_text"]
+
+    # ------------------------------------------------------------
+    # Set the semantic values.
+    # Also update the selectbox widget state itself.
+    # ------------------------------------------------------------
+
+    st.session_state.unspecified_action_semantics = (
+        test_case["semantics_by_default"]
+    )
+
+    st.session_state.duty_semantics = (
+        test_case["semantics_for_duties"]
+    )
+
+    # These are the actual keys used by the selectbox widgets.
+    unspecified_action_options = {
+        "Permitted-By-Default (accept unless explicitly prohibited)": 1,
+        "Prohibited-By-Default (reject unless explicitly permitted)": -1,
+        "Unspecified-By-Default (do not compute unless explicitly regulated)": 0,
+    }
+
+    duty_options = {
+        "Grant Access on Promise of Duty Completion": 1,
+        "Reject Requests with Unfulfilled Duties": -1,
+    }
+
+    st.session_state.unspecified_action_semantics_select = (
+        next(
+            label
+            for label, value in unspecified_action_options.items()
+            if value == test_case["semantics_by_default"]
+        )
+    )
+
+    st.session_state.duty_semantics_select = (
+        next(
+            label
+            for label, value in duty_options.items()
+            if value == test_case["semantics_for_duties"]
+        )
+    )
+
+    # ------------------------------------------------------------
+    # Test-case information
+    # ------------------------------------------------------------
+
+    st.session_state.test_case_description = (
+        test_case["test_description"]
+    )
+
+    st.session_state.test_case_expected_decision = (
+        test_case["expected_accept_decision"]
+    )
+
+    st.session_state.test_case_tag = (
+        test_case["test_tag"]
+    )
+
+    # The JSON supplied by the test case is authoritative.
+    st.session_state.access_request_uploaded = True
+    st.session_state.access_request_form_generated = False
+
+    # Clear any previous generated form data.
+    st.session_state.access_request_features = []
+    st.session_state.access_request_actions = []
+    st.session_state.access_request_form_values = {}
+
+    # Clear the previous evaluation result.
+    st.session_state.evaluation_result_text = ""
+    st.session_state.evaluation_accept_decision = None
+    st.session_state.evaluation_accept_explanation = []
+
+    # Mark that the test should be evaluated on the next run.
+    st.session_state.evaluate_test_case = True
 
 def display_action_name(action_iri):
     """
@@ -1213,15 +1444,76 @@ apply_style()
 
 st.markdown("## ODRL Access Request Evaluator")
 
+if "selected_test_case" not in st.session_state:
+    st.session_state.selected_test_case = ""
+
+if "test_case_description" not in st.session_state:
+    st.session_state.test_case_description = ""
+
+if "test_case_expected_decision" not in st.session_state:
+    st.session_state.test_case_expected_decision = None
+
+if "test_case_tag" not in st.session_state:
+    st.session_state.test_case_tag = ""
+
+if "evaluate_test_case" not in st.session_state:
+    st.session_state.evaluate_test_case = False
+
+
+# ============================================================
+# LOAD TEST EXAMPLE
+# ============================================================
+
+test_cases = load_test_cases()
+
+test_case_options = [""] + list(test_cases.keys())
+
+selected_test_case = st.selectbox(
+    "Load Test Example",
+    options=test_case_options,
+    index=(
+        test_case_options.index(
+            st.session_state.selected_test_case
+        )
+        if st.session_state.selected_test_case in test_case_options
+        else 0
+    ),
+    format_func=lambda x: (
+        "Select a test case..."
+        if x == ""
+        else x
+    ),
+    key="selected_test_case",
+    on_change=lambda: select_test_case(
+        st.session_state.selected_test_case
+    ),
+)
+
+
+if st.session_state.test_case_description:
+    expected_decision = (
+        st.session_state.test_case_expected_decision
+    )
+
+    test_tag = st.session_state.test_case_tag
+
+    st.info(
+        f"Example summary: "
+        f"{st.session_state.test_case_description}\n\n"
+        f"Expected decision: "
+        f"{'Access Granted' if expected_decision == 'True' else 'Access Denied' if expected_decision == 'False' else 'Unspecified'}\n\n"
+        f"Feature tested: {test_tag}"
+    )
+
 st.markdown(
-    "Create an access request from an ODRL policy and evaluate "
+    "This app allwos you to create an access request from an ODRL policy and evaluate "
     "whether the request matches the policy's permissions and "
     "prohibitions."
 )
 
 st.markdown(
     """
-    Instructions:
+    Either select an example to display with the dropdown above, or follow these instructions:
     1) Upload an ODRL Policy
     2) Optionally, upload a State of the World object if you want to factor in previously executed duties.
     3) Fill in the `Access Request Form`, to specify the action you want permission for.
@@ -1323,7 +1615,11 @@ with settings_left:
         "How to treat requests for actions that are not "
         "regulated by the policy",
         options=list(unspecified_action_options.keys()),
-        index=1,  # Prohibited-By-Default
+        index=list(
+            unspecified_action_options.values()
+        ).index(
+            st.session_state.unspecified_action_semantics
+        ),
         key="unspecified_action_semantics_select"
     )
 
@@ -1349,7 +1645,11 @@ with settings_right:
         "**Semantics for Duties** — "
         "How to treat unfulfilled duties",
         options=list(duty_options.keys()),
-        index=0,
+        index=list(
+            duty_options.values()
+        ).index(
+            st.session_state.duty_semantics
+        ),
         key="duty_semantics_select"
     )
 
@@ -1461,21 +1761,27 @@ with col_left:
                 .decode("utf-8")
             )
 
+            st.session_state.sotw_raw_editor = (
+                st.session_state.sotw_text
+            )
+
             st.rerun()
 
     show_raw_sotw = st.toggle(
         "Show raw CSV text",
         value=False,
-        key="show_raw_sotw"
+        key="show_raw_sotw",
+        on_change=initialise_sotw_raw_editor
     )
 
     if show_raw_sotw:
         st.text_area(
             "CSV Text",
             height=400,
-            value=st.session_state.sotw_text,
-            key="sotw_raw_editor"
+            key="sotw_raw_editor",
+            on_change=update_sotw_from_raw_editor
         )
+
     else:
         if st.session_state.sotw_text.strip():
             try:
@@ -1827,7 +2133,11 @@ with col_right:
         key="access_request_text"
     )
 
-
+    add_to_sotw_button = st.button(
+        "Add to State of the World",
+        use_container_width=True,
+        on_click=add_access_request_to_sotw
+    )
 
 # ============================================================
 # EVALUATION AREA
@@ -1835,12 +2145,6 @@ with col_right:
 
 
 st.divider()
-
-add_to_sotw_button = st.button(
-    "Add to State of the World",
-    use_container_width=True,
-    on_click=add_access_request_to_sotw
-)
 
 evaluate_button = st.button(
     "Evaluate Access Request",
@@ -1860,7 +2164,12 @@ if st.session_state.get("sotw_add_error"):
 # EVALUATE
 # ============================================================
 
-if evaluate_button:
+if (
+    evaluate_button
+    or st.session_state.get("evaluate_test_case", False)
+):
+    # The test-case trigger is consumed now.
+    st.session_state.evaluate_test_case = False
 
     policy_text = (
         st.session_state.policy_text

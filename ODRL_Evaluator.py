@@ -1334,7 +1334,7 @@ def evaluate_ODRL_access_request_on_dataframe(
     ):
         accept_explanation.append(
             "Warning, some rules of the policy could match your request if some "
-            "of the unspeficied details (null features) of your request were "
+            "of the unspecified details (null features) of your request were "
             "given certain values. Please see the evaluation details for more "
             "information on rules that matched subject to conditions. You might "
             "want to specify those features better to gain a more precise decision."
