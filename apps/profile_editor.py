@@ -10,6 +10,8 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from profile_editor_concepts import concepts
+
 from rdflib import Graph, URIRef, Literal
 from rdflib.namespace import RDF
 
@@ -17,89 +19,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-# =========================================================
-# CONCEPT BLUEPRINT
-# =========================================================
-#
-# This variable can instead be imported from another module.
-#
-# IMPORTANT:
-#   "concepts" must be a list, even if there is only one
-#   concept.
-#
-# =========================================================
 
-concepts = [
-    {
-        "name": "Action",
-        "background": "#FFF9C4",
-        "fields": [
-            {
-                "type": "classes",
-                "class_list": [
-                    "odrl:Action"
-                ],
-            },
-            {
-                "type": "ID",
-                "mandatory": 1,
-            },
-            {
-                "type": "IRI_selection",
-                "text_label": "More general type of action",
-                "text_relations": [
-                    "odrl:includedIn"
-                ],
-                "concept_references": [
-                    "Action"
-                ],
-                "concept_query": """
-                    PREFIX odrl: <http://www.w3.org/ns/odrl/2/>
-                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-                    SELECT DISTINCT ?x ?l
-                    WHERE {
-                        {
-                            ?x odrl:includedIn ?y .
-                        }
-                        UNION
-                        {
-                            ?y odrl:includedIn ?x .
-                        }
-                        OPTIONAL {
-                            ?x rdfs:label ?l .
-                        }
-                    }
-                """,
-                "mandatory": 0,
-            },
-            {
-                "type": "text",
-                "text_label": "Label",
-                "text_info": (
-                    "Add a short human readable name "
-                    "for this concept"
-                ),
-                "text_relations": [
-                    "rdfs:label"
-                ],
-                "mandatory": 0,
-            },
-            {
-                "type": "text_area",
-                "text_label": "Description",
-                "text_info": (
-                    "Add a longer description "
-                    "for this concept"
-                ),
-                "text_relations": [
-                    "rdfs:comment"
-                ],
-                "mandatory": 0,
-            },
-        ],
-    }
-]
 
 # =========================================================
 # DEFAULT / BUILT-IN PREFIXES
@@ -192,7 +112,7 @@ ontology = load_odrl_ontologies()
 # =========================================================
 
 st.set_page_config(
-    page_title="Ontology Builder",
+    page_title="ODRL Profile and Ontology Builder",
     layout="wide",
 )
 
@@ -1716,12 +1636,12 @@ def generate_ttl():
 # PAGE HEADER
 # =========================================================
 
-st.title("Ontology Builder")
+st.title("ODRL Profile and Ontology Builder")
 
 st.markdown(
     """
-    Build an ontology interactively from predefined concept
-    blueprints and download the resulting ontology as Turtle.
+    This tool allows you to easily define ODRL specific concepts to be used when defining ODRL policies.
+    In this version 0.1 of the tool, you can define core features of Actions, Parties, Assets and Left Operands.
     """
 )
 
