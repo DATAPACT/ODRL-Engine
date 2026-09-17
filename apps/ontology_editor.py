@@ -32,6 +32,7 @@ logging.basicConfig(level=logging.INFO)
 concepts = [
     {
         "name": "Action",
+        "background": "#FFF9C4",
         "fields": [
             {
                 "type": "classes",
@@ -204,40 +205,45 @@ st.markdown(
     """
     <style>
 
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+    div[data-testid="stVerticalBlock"] {
+        gap: 0.25rem;
+    }
+
     .concept-container {
-        border: 1px solid #d9d9d9;
         border-radius: 8px;
-        padding: 18px;
-        margin-top: 12px;
-        margin-bottom: 20px;
-        background-color: #fafafa;
+        padding: 8px 12px;
+        margin: 2px 0;
+        border-left: 6px solid rgba(0,0,0,0.2);
     }
 
     .concept-title {
-        font-size: 20px;
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: 15px;
+        margin: 0;
+        line-height: 1.2;
     }
 
     .duplicate-warning {
         color: #c62828;
-        font-size: 13px;
-        margin-top: -8px;
-        margin-bottom: 10px;
-    }
-
-    .prefix-container {
-        border: 1px solid #d9d9d9;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 10px;
+        font-size: 12px;
+        margin-top: 2px;
+        margin-bottom: 2px;
     }
 
     .field-description {
         color: #666666;
-        font-size: 13px;
-        margin-top: -8px;
-        margin-bottom: 10px;
+        font-size: 12px;
+        margin: 0;
+    }
+
+    div.stButton > button {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
     }
 
     </style>
@@ -503,6 +509,15 @@ def get_full_id(field_data):
 
     return f"{prefix}:{value}"
 
+def get_instance_id(instance):
+    """
+    Return the compact ID (e.g. ex:Action1)
+    for a concept instance.
+    """
+    for field_data in instance["fields"]:
+        if field_data["blueprint"].get("type") == "ID":
+            return get_full_id(field_data)
+    return ""
 
 def validate_id_local_part(value):
     """
@@ -653,12 +668,18 @@ def render_classes_field(
         "**Classes**"
     )
 
-    for class_iri in class_list:
+    badges = "".join(
+        [
+            f'<span style="background:#eeeeee;border-radius:12px;padding:2px 8px;font-size:12px;margin-right:4px;">'
+            f'{html.escape(class_iri)}</span>'
+            for class_iri in class_list
+        ]
+    )
 
-        st.code(
-            class_iri,
-            language=None,
-        )
+    st.markdown(
+        badges,
+        unsafe_allow_html=True,
+    )
 
     # Keep the actual list in the form's internal data.
     field_data["value"] = deepcopy(
@@ -727,7 +748,7 @@ def render_text_area_field(
             "value",
             "",
         ),
-        height=150,
+        height=60,
         key=(
             f"text_area_"
             f"{instance['instance_id']}_"
@@ -1704,6 +1725,10 @@ st.markdown(
     """
 )
 
+left_panel, right_panel = st.columns(
+    [1, 3],
+    gap="medium"
+)
 
 # =========================================================
 # DOWNLOAD ONTOLOGY
@@ -1747,270 +1772,270 @@ if download_clicked:
             use_container_width=True,
         )
 
+with left_panel:
+    # =========================================================
+    # PREFIXES
+    # =========================================================
 
-# =========================================================
-# PREFIXES
-# =========================================================
+    st.divider()
 
-st.divider()
+    st.subheader("Prefixes")
 
-st.subheader("Prefixes")
-
-st.markdown(
-    """
-    Define the prefixes that can be used by ID and class fields.
-    """
-)
+    st.markdown(
+        """
+        Define the prefixes that can be used by ID and class fields.
+        """
+    )
 
 
-for index, prefix_data in enumerate(
-    st.session_state.prefixes
-):
+    for index, prefix_data in enumerate(
+        st.session_state.prefixes
+    ):
 
-    with st.container():
+        with st.container():
 
-        col1, col2, col3 = st.columns(
-            [1, 4, 0.7]
-        )
-
-        with col1:
-
-            prefix = st.text_input(
-                "Prefix",
-                value=prefix_data["prefix"],
-                key=(
-                    f"prefix_name_"
-                    f"{prefix_data['id']}"
-                ),
-                help=(
-                    "Letters, numbers, underscores and "
-                    "hyphens only. Must start with a letter."
-                ),
+            col1, col2, col3 = st.columns(
+                [1, 4, 0.7]
             )
 
-            prefix_data["prefix"] = prefix.strip()
+            with col1:
 
-        with col2:
-
-            expansion = st.text_input(
-                "Expansion",
-                value=prefix_data["expansion"],
-                key=(
-                    f"prefix_expansion_"
-                    f"{prefix_data['id']}"
-                ),
-                help=(
-                    "For example: "
-                    "https://example.com/"
-                ),
-            )
-
-            prefix_data["expansion"] = (
-                expansion.strip()
-            )
-
-        with col3:
-
-            # Don't allow the initial ex prefix to be removed.
-            # All other prefixes can be removed.
-            if index > 0:
-
-                if st.button(
-                    "Remove",
+                prefix = st.text_input(
+                    "Prefix",
+                    value=prefix_data["prefix"],
                     key=(
-                        f"remove_prefix_"
+                        f"prefix_name_"
                         f"{prefix_data['id']}"
                     ),
-                ):
+                    help=(
+                        "Letters, numbers, underscores and "
+                        "hyphens only. Must start with a letter."
+                    ),
+                )
 
-                    st.session_state.prefixes.pop(
-                        index
+                prefix_data["prefix"] = prefix.strip()
+
+            with col2:
+
+                expansion = st.text_input(
+                    "Expansion",
+                    value=prefix_data["expansion"],
+                    key=(
+                        f"prefix_expansion_"
+                        f"{prefix_data['id']}"
+                    ),
+                    help=(
+                        "For example: "
+                        "https://example.com/"
+                    ),
+                )
+
+                prefix_data["expansion"] = (
+                    expansion.strip()
+                )
+
+            with col3:
+
+                # Don't allow the initial ex prefix to be removed.
+                # All other prefixes can be removed.
+                if index > 0:
+
+                    if st.button(
+                        "Remove",
+                        key=(
+                            f"remove_prefix_"
+                            f"{prefix_data['id']}"
+                        ),
+                    ):
+
+                        st.session_state.prefixes.pop(
+                            index
+                        )
+
+                        st.rerun()
+
+
+    if st.button(
+        "Add Prefix",
+        use_container_width=False,
+    ):
+
+        next_prefix_number = len(
+            st.session_state.prefixes
+        )
+
+        st.session_state.prefixes.append(
+            {
+                "id": f"prefix_{next_prefix_number}_{int(time.time() * 1000)}",
+                "prefix": "",
+                "expansion": "",
+            }
+        )
+
+        st.rerun()
+
+
+    # =========================================================
+    # ADD CONCEPT
+    # =========================================================
+
+    st.divider()
+
+    st.subheader("Add Concept")
+
+    concept_names = [
+        concept.get("name", "")
+        for concept in concepts
+        if concept.get("name")
+    ]
+
+    if not concept_names:
+
+        st.warning(
+            "No concepts have been defined."
+        )
+
+    else:
+
+        concept_col, button_col = st.columns(
+            [4, 1]
+        )
+
+        with concept_col:
+
+            selected_concept_name = st.selectbox(
+                "Concept type",
+                options=concept_names,
+                key="selected_concept_type",
+            )
+
+        with button_col:
+
+            st.write("")
+
+            add_concept_clicked = st.button(
+                "Add Concept",
+                use_container_width=True,
+            )
+
+        if add_concept_clicked:
+
+            blueprint = get_concept_blueprint(
+                selected_concept_name
+            )
+
+            if blueprint:
+
+                new_instance = (
+                    create_concept_instance(
+                        blueprint
                     )
+                )
 
-                    st.rerun()
+                st.session_state.concept_instances.append(
+                    new_instance
+                )
 
-
-if st.button(
-    "Add Prefix",
-    use_container_width=False,
-):
-
-    next_prefix_number = len(
-        st.session_state.prefixes
-    )
-
-    st.session_state.prefixes.append(
-        {
-            "id": f"prefix_{next_prefix_number}_{int(time.time() * 1000)}",
-            "prefix": "",
-            "expansion": "",
-        }
-    )
-
-    st.rerun()
+                st.rerun()
 
 
-# =========================================================
-# ADD CONCEPT
-# =========================================================
+with right_panel:
+    # =========================================================
+    # CONCEPT EDITING AREA
+    # =========================================================
 
-st.divider()
+    st.divider()
 
-st.subheader("Add Concept")
+    st.subheader("Concepts")
 
-concept_names = [
-    concept.get("name", "")
-    for concept in concepts
-    if concept.get("name")
-]
 
-if not concept_names:
+    if not st.session_state.concept_instances:
 
-    st.warning(
-        "No concepts have been defined."
-    )
-
-else:
-
-    concept_col, button_col = st.columns(
-        [4, 1]
-    )
-
-    with concept_col:
-
-        selected_concept_name = st.selectbox(
-            "Concept type",
-            options=concept_names,
-            key="selected_concept_type",
+        st.info(
+            "No concepts have been added yet. "
+            "Select a concept above and click "
+            "'Add Concept'."
         )
 
-    with button_col:
 
-        st.write("")
-
-        add_concept_clicked = st.button(
-            "Add Concept",
-            use_container_width=True,
-        )
-
-    if add_concept_clicked:
+    for instance_number, instance in enumerate(
+        st.session_state.concept_instances,
+        start=1,
+    ):
+        instance_id = instance["instance_id"]
 
         blueprint = get_concept_blueprint(
-            selected_concept_name
+            instance["concept_name"]
         )
 
+        background = "#f8f8f8"
+
         if blueprint:
-
-            new_instance = (
-                create_concept_instance(
-                    blueprint
-                )
+            background = blueprint.get(
+                "background",
+                background
             )
 
-            st.session_state.concept_instances.append(
-                new_instance
-            )
+        concept_id = get_instance_id(instance)
 
-            st.rerun()
-
-
-# =========================================================
-# CONCEPT EDITING AREA
-# =========================================================
-
-st.divider()
-
-st.subheader("Concepts")
-
-
-if not st.session_state.concept_instances:
-
-    st.info(
-        "No concepts have been added yet. "
-        "Select a concept above and click "
-        "'Add Concept'."
-    )
-
-
-for instance_number, instance in enumerate(
-    st.session_state.concept_instances,
-    start=1,
-):
-
-    instance_id = instance["instance_id"]
-
-    with st.container():
+        title = (
+            f"{instance['concept_name']} #{instance_number}"
+            if not concept_id
+            else f"{instance['concept_name']} #{instance_number} • {concept_id}"
+        )
 
         st.markdown(
             f"""
-            <div class="concept-container">
-                <div class="concept-title">
-                    {html.escape(instance["concept_name"])}
-                    #{instance_number}
-                </div>
+            <div style="
+                border-left: 8px solid {background};
+                height: 32px;
+                margin-bottom: -32px;
+                pointer-events: none;
+            ">
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # ---------------------------------------------
-        # Remove concept
-        # ---------------------------------------------
-
-        remove_col, spacer_col = st.columns(
-            [1, 5]
-        )
-
-        with remove_col:
+        with st.expander(
+                title,
+                expanded=False,
+        ):
 
             remove_clicked = st.button(
-                "Remove Concept",
+                "🗑 Remove",
                 key=f"remove_concept_{instance_id}",
             )
 
-        if remove_clicked:
+            if remove_clicked:
+                st.session_state.concept_instances = [
+                    item
+                    for item in st.session_state.concept_instances
+                    if item["instance_id"] != instance_id
+                ]
+                st.rerun()
 
-            st.session_state.concept_instances = [
-                item
-                for item in st.session_state.concept_instances
-                if item["instance_id"] != instance_id
-            ]
+            for field_index, field_data in enumerate(
+                instance["fields"]
+            ):
+                blueprint = field_data["blueprint"]
 
-            st.rerun()
+                field_type = blueprint.get("type")
 
-        # ---------------------------------------------
-        # Render fields
-        # ---------------------------------------------
+                if field_type not in FIELD_RENDERERS:
+                    continue
 
-        for field_index, field_data in enumerate(
-            instance["fields"]
-        ):
-
-            blueprint = field_data["blueprint"]
-
-            field_type = blueprint.get(
-                "type"
-            )
-
-            # Unknown types are silently ignored.
-            if field_type not in FIELD_RENDERERS:
-                continue
-
-            render_field(
-                instance,
-                field_data,
-                field_index,
-            )
-
-            # Mandatory marker
-            if blueprint.get(
-                "mandatory",
-                0,
-            ) == 1:
-
-                st.caption(
-                    "Required"
+                render_field(
+                    instance,
+                    field_data,
+                    field_index,
                 )
+
+                if blueprint.get(
+                    "mandatory",
+                    0,
+                ) == 1:
+                    st.caption("Required")
 
 
 # =========================================================
