@@ -1640,8 +1640,9 @@ st.title("ODRL Profile and Ontology Builder")
 
 st.markdown(
     """
-    This tool allows you to easily define ODRL specific concepts to be used when defining ODRL policies.
-    In this version 0.1 of the tool, you can define core features of Actions, Parties, Assets and Left Operands.
+    This tool is designed to define ODRL Profiles or Ontologies that contain policy-relevant information.
+    
+    This is version 0.1 of the tool, and some features are not complete. It currently supports basic property definitions of Actions, Parties, Assets and Left Operands.
     """
 )
 
