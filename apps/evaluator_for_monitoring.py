@@ -277,7 +277,7 @@ with col2:
 
             if st.session_state.sotw_text.strip():
 
-                df = pd.read_csv(StringIO(st.session_state.sotw_text))
+                df = pd.read_csv(StringIO(st.session_state.sotw_text),true_values=[],false_values=[])
                 st.dataframe(df, use_container_width=True, height=450)
 
             else:

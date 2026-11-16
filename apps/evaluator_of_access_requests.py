@@ -1832,7 +1832,7 @@ with col_left:
         if st.session_state.sotw_text.strip():
             try:
                 sotw_df = pd.read_csv(
-                    StringIO(st.session_state.sotw_text)
+                    StringIO(st.session_state.sotw_text),true_values=[],false_values=[]
                 )
 
                 st.dataframe(

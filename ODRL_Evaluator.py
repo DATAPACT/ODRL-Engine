@@ -330,7 +330,7 @@ def evaluate_ODRL_from_files_merge_policies(policy_files, SotW_file):
             if iri not in merged_feature_map:
                 merged_feature_map[iri] = f["type"]
 
-    df = pd.read_csv(SotW_file)
+    df = pd.read_csv(SotW_file,true_values=[],false_values=[])
 
     return evaluate_ODRL_on_dataframe(merged_graph_rules[0], df, merged_feature_map)
 
@@ -975,7 +975,7 @@ def evaluate_ODRL_from_files(
             evaluation_state = json.load(f)
 
     FEATURE_TYPE_MAP = {f["iri"]: f["type"] for f in features}
-    df = pd.read_csv(SotW_file)
+    df = pd.read_csv(SotW_file,true_values=[],false_values=[])
 
     if reasoning:
         ontology_graphs.append(graph)
@@ -1017,7 +1017,7 @@ def evaluate_ODRL_from_strings(
     }
 
     df = pd.read_csv(
-        StringIO(sotw_csv)
+        StringIO(sotw_csv),true_values=[],false_values=[]
     )
 
     if isinstance(evaluation_state, str):
@@ -1625,7 +1625,7 @@ def evaluate_ODRL_access_request_from_string(
 
     if state_of_the_world_string is not None:
         df = pd.read_csv(
-            StringIO(state_of_the_world_string)
+            StringIO(state_of_the_world_string),true_values=[],false_values=[]
         )
 
     # ---------------------------------------------------------
@@ -1713,7 +1713,7 @@ def evaluate_ODRL_access_request_from_files(
     df = None
 
     if state_of_the_world_file is not None:
-        df = pd.read_csv(state_of_the_world_file)
+        df = pd.read_csv(state_of_the_world_file,true_values=[],false_values=[])
 
     # ---------------------------------------------------------
     # 4) Load evaluation state, if supplied
@@ -1787,7 +1787,7 @@ def evaluate_ODRL_from_files_streaming(
     # ----------------------------------------
     # 3) LOAD + SORT SOTW
     # ----------------------------------------
-    df = pd.read_csv(SotW_file)
+    df = pd.read_csv(SotW_file,true_values=[],false_values=[])
 
 
 
