@@ -9,10 +9,8 @@ import shutil
 import json
 import math
 import operator
-import re
 from datetime import datetime
 
-# if dateutil is not install then install it using (!pip install python-dateutil)
 from dateutil import parser
 import uuid
 

@@ -1,3 +1,4 @@
 {
-  "http://www.w3.org/ns/odrl/2/Action": "http://www.w3.org/ns/odrl/2/print"
+  "http://www.w3.org/ns/odrl/2/Action": "http://www.w3.org/ns/odrl/2/print",
+  "http://www.w3.org/ns/odrl/2/Asset": "http://example.com/asset:9898.movie"
 }

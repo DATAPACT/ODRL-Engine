@@ -8,6 +8,7 @@
     odrl:action [
       rdf:value odrl:print ;
     ] ;
+	odrl:target <http://example.com/asset:9898.movie> ;
     odrl:constraint
 	  [
 	  a odrl:Constraint ;
