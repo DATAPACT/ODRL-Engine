@@ -1,4 +1,4 @@
-expected_accept_decision=False
+expected_accept_decision=True
 semantics_for_duties=1
 semantics_by_default=-1
 test_description=You are allowed to print less than 4 times. You never printed before. Your request to print should thus be accepted.

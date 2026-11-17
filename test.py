@@ -216,6 +216,11 @@ def run_access_request_evaluation_tests():
             )
             continue
 
+        missing_permissions = []
+        extra_permissions = []
+        missing_prohibitions = []
+        extra_prohibitions = []
+
         if not expected_conditional_prohibitions and not expected_conditional_permissions:
             conditions_ok = True
         else:
