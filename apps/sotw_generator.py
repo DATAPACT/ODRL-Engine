@@ -416,68 +416,26 @@ def main():
             mime="text/csv"
         )
 
-
-
     # -----------------------------------------------------
     # Show conditions
     # -----------------------------------------------------
 
-    st.header(
-        "4. Policy Conditions"
-    )
+    st.header( "4. Policy Conditions")
 
-
-    if st.button(
-        "Show Rule Conditions"
-    ):
-
-
+    if st.button("Show Rule Conditions"):
         if graph is None:
-
-            st.warning(
-                "Upload a policy first."
-            )
-
+            st.warning("Upload a policy first.")
         else:
-
             try:
-
-                rules = (
-                    SotW_generator
-                    .extract_rule_list_from_policy(
-                        graph
-                    )
-                )
-
-
-                st.subheader(
-                    "Pretty Printed Rule Conditions"
-                )
-
-
-                st.text(
-                    pretty_print_rules(rules)
-                )
-
-
-                st.subheader(
-                    "Rule Conditions JSON"
-                )
-
-
-                st.json(
-                    rules
-                )
-
-
+                rules = (rdf_utils.extract_rule_list_from_policy(graph))
+                st.subheader("Pretty Printed Rule Conditions")
+                st.text(pretty_print_rules(rules))
+                st.subheader("Rule Conditions JSON")
+                st.json(rules)
             except Exception as e:
-
                 st.error(
                     f"Could not extract rules: {e}"
                 )
 
-
-
 if __name__ == "__main__":
-
     main()
