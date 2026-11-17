@@ -1,0 +1,5 @@
+expected_accept_decision=False
+semantics_for_duties=1
+semantics_by_default=-1
+test_description=You are allowed to print less than 4 times. You already printed three times. Your request to print should thus be rejected, as if you print again, it would bring the total count to 4.
+test_tag=count

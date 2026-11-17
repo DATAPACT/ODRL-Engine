@@ -1147,6 +1147,26 @@ def evaluate_ODRL_access_request_on_dataframe(
         else:
             evaluation_state = initialise_evaluation_state(policy)
 
+    # Convert the access request dictionary into a one-row DataFrame.
+    # Convert all values to strings.
+    access_request_df = pd.DataFrame(
+        [{key: str(value) for key, value in access_request.items()}]
+    )
+
+    # Add the prospective access request to a temporary SotW.
+    result = evaluate_ODRL_on_dataframe(
+        policy,
+        access_request_df,
+        FEATURE_TYPE_MAP,
+        evaluation_state=evaluation_state,
+        reasoning=reasoning,
+        ontology_graphs=ontology_graphs,
+        ontology_files=ontology_files,
+        precomputed_reasoning_expansion=reasoning_expansion
+    )
+
+    evaluation_state = result[0]
+
     # ---------------------------------------------------------
     # 3) Convert access request into a pandas Series
     # ---------------------------------------------------------
