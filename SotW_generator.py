@@ -282,7 +282,7 @@ def generate_state_of_the_world_from_policies_from_file(
     return generate_state_of_the_world_from_policies(g, number_of_records, valid, chance_feature_empty, csv_file)
 
 def translate_csv_to_solid_syntax(csv_file, destination_file="translated_sotw.ttl"):
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(csv_file,dtype=str,keep_default_na=False)
     rdf_graph = rdflib.Graph()
     sotw_node = rdflib.URIRef("https://example.com/iri/sotw")
     rdf_graph.add((sotw_node, RDF.type, SOTW.SotW))

@@ -72,7 +72,7 @@ def merge_json_row_from_strings(
     if dataframe_string is None or dataframe_string == "":
         df = pd.DataFrame()
     else:
-        df = pd.read_csv(io.StringIO(dataframe_string))
+        df = pd.read_csv(io.StringIO(dataframe_string),dtype=str,keep_default_na=False)
 
     # Parse JSON string into a Python dictionary.
     data = json.loads(json_string)
